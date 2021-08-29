@@ -97,20 +97,21 @@ namespace TelegramBot
                 {
                     string forTranslation = message.Text?.Substring(message.Text.IndexOf(' '));
                     
-                    string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q={HttpUtility.UrlEncode(forTranslation)}";
+                    string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=" +
+                                 $"{HttpUtility.UrlEncode(forTranslation)}";
                     result = new WebClient { Encoding = System.Text.Encoding.UTF8 }.DownloadString(url);
                     result = result.Substring(4, result.IndexOf("\"", 4, StringComparison.Ordinal) - 4);
                     
                 }
                 catch (Exception exc)
                 {
-                    result = "*Произошла ошибка при переводе!*";
+                    result = "<b>Произошла ошибка при переводе!</b>";
                 }
 
                 return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: result, 
-                    ParseMode.MarkdownV2);
+                    ParseMode.Html);
             }
 
             static async Task<Message> NumberOfSings(ITelegramBotClient botClient, Message message)
@@ -129,7 +130,7 @@ namespace TelegramBot
                     }
                 }
 
-                string result = "*Всего: " + singsDictionary.Values.Sum() + " шт.*\n\n";
+                string result = "<b>Всего: " + singsDictionary.Values.Sum() + " шт.</b>\n\n";
 
                 foreach (var singsDictionaryKey in singsDictionary.Keys)
                 {
@@ -140,7 +141,7 @@ namespace TelegramBot
                 return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: result,
-                    ParseMode.Markdown);
+                    ParseMode.Html);
             }
 
             static async Task<Message> Usage(ITelegramBotClient botClient, Message message)
