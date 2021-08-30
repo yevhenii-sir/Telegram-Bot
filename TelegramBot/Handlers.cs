@@ -12,6 +12,7 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using TelegramBot.Databases;
 
 namespace TelegramBot
 {
@@ -60,6 +61,7 @@ namespace TelegramBot
             
             var action = (message.Text?.Split(" ").First()) switch
             {
+                "/start" => UserInitializationAsync(botClient, message),
                 "Сумма:" => SumOfNumbers(botClient, message),
                 "Перевод:" => TranslateString(botClient, message),
                 "Знаки:" => NumberOfSings(botClient, message),
@@ -68,6 +70,16 @@ namespace TelegramBot
             
             var sentMessage = await action;
             Console.WriteLine($"В ответ было отпавлено сообщене с идентификатором: {sentMessage.MessageId}");
+
+            static async Task<Message> UserInitializationAsync(ITelegramBotClient botClient, Message message)
+            {
+                if (SqLiteHandlers.DatabaseExist())
+                    SqLiteHandlers.AddUserToDatabaseAsync(message.From.Id);
+
+                Console.WriteLine($"Пользователь {message.From.Id} добавлен в базу данных.");
+
+                return await Usage(botClient, message);
+            }
 
             static async Task<Message> SumOfNumbers(ITelegramBotClient botClient, Message message)
             {

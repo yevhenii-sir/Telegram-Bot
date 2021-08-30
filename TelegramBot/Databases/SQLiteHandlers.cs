@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-
 using System.Data.SQLite;
 
 namespace TelegramBot.Databases
@@ -20,7 +19,7 @@ namespace TelegramBot.Databases
         /// </summary>
         /// <returns></returns>
         public static bool DatabaseExist() => File.Exists(_fullPathToDatabase);
-        
+
         private static async Task<int> ExecuteNonQueryCommandAsync(this SQLiteCommand command)
         {
             int number = -1;
@@ -41,34 +40,29 @@ namespace TelegramBot.Databases
             return number;
         }
 
-        public static async void CreateDatabaseIfMissingAsync()
+        public static void CreateDatabaseIfMissingAsync()
         {
             if (DatabaseExist())
                 return;
 
-            await Task.Run(CreateDatabase);
-            
-            static void CreateDatabase()
+            try
             {
-                try
-                {
-                    Directory.CreateDirectory(_databasePath);
-                    SQLiteConnection.CreateFile(_fullPathToDatabase);
-                }
-                catch (IOException exception)
-                {
-                    Console.WriteLine(exception);
-                    return;
-                }
-
-                string commandText =
-                    "CREATE TABLE USERS (TelegramId INTEGER NOT NULL PRIMARY KEY UNIQUE, NumberOfWins INTEGER DEFAULT 0, ConceivedNumber INTEGER DEFAULT 0)";
-
-                SQLiteCommand command = new SQLiteCommand(commandText);
-                command.ExecuteNonQueryCommandAsync();
+                Directory.CreateDirectory(_databasePath);
+                SQLiteConnection.CreateFile(_fullPathToDatabase);
             }
+            catch (IOException exception)
+            {
+                Console.WriteLine(exception);
+                return;
+            }
+
+            string commandText =
+                "CREATE TABLE USERS (TelegramId INTEGER NOT NULL PRIMARY KEY UNIQUE, NumberOfWins INTEGER DEFAULT 0, ConceivedNumber INTEGER DEFAULT 0)";
+
+            SQLiteCommand command = new SQLiteCommand(commandText);
+            command.ExecuteNonQueryCommandAsync();
         }
-        
+
         public static void UpdateUserList()
         {
             UsersList.Clear();
@@ -87,13 +81,13 @@ namespace TelegramBot.Databases
                     {
                         while (reader.Read())
                         {
-                            UsersList.Add(new User(reader.GetInt64(0), 
+                            UsersList.Add(new User(reader.GetInt64(0),
                                 reader.GetInt32(1),
                                 reader.GetByte(2)));
                         }
                     }
                 }
-                
+
                 connection.Close();
             }
         }
@@ -108,15 +102,15 @@ namespace TelegramBot.Databases
             static async Task AddUser(long telegramId)
             {
                 UsersList.Add(new User(telegramId, 0, 0));
-                
+
                 string commandText =
                     "INSERT INTO USERS (TelegramId) VALUES (@telegramId)";
 
                 SQLiteCommand command = new SQLiteCommand(commandText);
                 command.Parameters.AddWithValue("@telegramId", telegramId);
-                
+
                 await command.ExecuteNonQueryCommandAsync();
-            };
+            }
         }
 
         public static async void UpdateUserDataAsync(User user)
