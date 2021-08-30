@@ -64,6 +64,7 @@ namespace TelegramBot
             {
                 "/start" => UserInitializationAsync(botClient, message),
                 "/game" => Game.SendInlineGameKeyboard(botClient, message),
+                "/rating" => Game.ShowUserRatings(botClient, message),
                 "Сумма:" => SumOfNumbers(botClient, message),
                 "Перевод:" => TranslateString(botClient, message),
                 "Знаки:" => NumberOfSings(botClient, message),
@@ -161,10 +162,12 @@ namespace TelegramBot
             static async Task<Message> Usage(ITelegramBotClient botClient, Message message)
             {
                 const string usage = "*Команды:*\n\n" +
-                                     "/game * -  игра 'Угадай число'*\n\n" +
                                      "`Сумма: [числа через пробел]`*  -  сумма указаных чисел*\n\n" +
                                      "`Перевод: [фраза]`*  -  перевод указаного преложения*\n\n" +
-                                     "`Знаки: [фраза]`*  -  детальный вывод количества знаков*";
+                                     "`Знаки: [фраза]`*  -  детальный вывод количества знаков*\n\n" +
+                                     "*Игра угадай число:*\n\n" +
+                                     "/game*  -  запустить игру*\n\n" +
+                                     "/rating*  -  посмотреть рейтинг*";
                 
                 return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,

@@ -1,15 +1,12 @@
 using System;
-using System.Net;
-using System.Web;
 using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+
 using TelegramBot.Databases;
 
 namespace TelegramBot
@@ -93,6 +90,24 @@ namespace TelegramBot
                     text: $"Вы закончили игру, начните игру заново!!!\n" +
                           $"Команда: /game");
             }
+        }
+
+        public static async Task<Message> ShowUserRatings(ITelegramBotClient botClient, Message message)
+        {
+            string rating = "<b>Рейтинг:\n" +
+                            $"{"ID", -22}Баллы</b>\n";
+
+            foreach (var user in SqLiteHandlers.UsersList)
+            {
+                if (user.NumberOfWins == 0) break;
+
+                rating += $"<i>{user.TelegramId, -14}{user.NumberOfWins}</i>\n";
+            }
+
+            return await botClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: rating,
+                ParseMode.Html);
         }
     }
 }
