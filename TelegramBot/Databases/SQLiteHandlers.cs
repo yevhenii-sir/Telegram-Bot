@@ -62,7 +62,7 @@ namespace TelegramBot.Databases
                 }
 
                 string commandText =
-                    "CREATE TABLE USERS (TelegramId INTEGER NOT NULL PRIMARY KEY UNIQUE, NumerOfWins INTEGER DEFAULT 0, ConceivedNumber INTEGER DEFAULT 0)";
+                    "CREATE TABLE USERS (TelegramId INTEGER NOT NULL PRIMARY KEY UNIQUE, NumberOfWins INTEGER DEFAULT 0, ConceivedNumber INTEGER DEFAULT 0)";
 
                 SQLiteCommand command = new SQLiteCommand(commandText);
                 command.ExecuteNonQueryCommandAsync();
@@ -78,7 +78,7 @@ namespace TelegramBot.Databases
                 connection.Open();
 
                 string commandText =
-                    "SELECT * FROM USERS ORDER BY NumerOfWins DESC;";
+                    "SELECT * FROM USERS ORDER BY NumberOfWins DESC;";
 
                 SQLiteCommand command = new SQLiteCommand(commandText, connection);
                 using (SQLiteDataReader reader = command.ExecuteReader())
@@ -117,6 +117,24 @@ namespace TelegramBot.Databases
                 
                 await command.ExecuteNonQueryCommandAsync();
             };
+        }
+
+        public static async void UpdateUserDataAsync(Users user)
+        {
+            await UpdateUserValue(user);
+            
+            static async Task UpdateUserValue(Users user)
+            {
+                string commandText =
+                    "UPDATE USERS SET NumberOfWins = @numberOfWins, ConceivedNumber = @conceivedNumber WHERE TelegramId = @telegramId";
+
+                SQLiteCommand command = new SQLiteCommand(commandText);
+                command.Parameters.AddWithValue("@numberOfWins", user.NumberOfWins);
+                command.Parameters.AddWithValue("@conceivedNumber", user.ConceivedNumber);
+                command.Parameters.AddWithValue("@telegramId", user.TelegramId);
+
+                await command.ExecuteNonQueryCommandAsync();
+            }
         }
     }
 }
