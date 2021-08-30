@@ -101,8 +101,8 @@ namespace TelegramBot
 
                 return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
-                    text: $"*Сумма равна: {result}*",
-                    ParseMode.Markdown);
+                    text: $"<b><i>Сумма равна: {result}</i></b>",
+                    ParseMode.Html);
             }
 
             static async Task<Message> TranslateString(ITelegramBotClient botClient, Message message)
@@ -120,12 +120,12 @@ namespace TelegramBot
                 }
                 catch (Exception exc)
                 {
-                    result = "<b>Произошла ошибка при переводе!</b>";
+                    result = "Произошла ошибка при переводе!";
                 }
 
                 return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
-                    text: result, 
+                    text: "<b><i>" + result + "</i></b>", 
                     ParseMode.Html);
             }
 
@@ -145,7 +145,7 @@ namespace TelegramBot
                     }
                 }
 
-                string result = "<b>Всего: " + singsDictionary.Values.Sum() + " шт.</b>\n\n";
+                string result = "Всего: " + singsDictionary.Values.Sum() + " шт.\n\n";
 
                 foreach (var singsDictionaryKey in singsDictionary.Keys)
                 {
@@ -155,24 +155,23 @@ namespace TelegramBot
 
                 return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
-                    text: result,
-                    ParseMode.Html);
+                    text: result);
             }
 
             static async Task<Message> Usage(ITelegramBotClient botClient, Message message)
             {
-                const string usage = "*Команды:*\n\n" +
-                                     "`Сумма: [числа через пробел]`*  -  сумма указаных чисел*\n\n" +
-                                     "`Перевод: [фраза]`*  -  перевод указаного преложения*\n\n" +
-                                     "`Знаки: [фраза]`*  -  детальный вывод количества знаков*\n\n" +
-                                     "*Игра угадай число:*\n\n" +
-                                     "/game*  -  запустить игру*\n\n" +
-                                     "/rating*  -  посмотреть рейтинг*";
+                const string usage = "<b><i>Команды:</i>\n\n" +
+                                     "</b><i>Сумма: [числа через пробел]</i><b><i> - сумма указаных чисел.</i>\n\n" +
+                                     "</b><i>Перевод: [фраза]</i><b><i> - перевод указаного преложения.</i>\n\n" +
+                                     "</b><i>Знаки: [фраза]</i><b><i> - детальный вывод количества знаков.\n\n" +
+                                     "Игра 'Угадай цыфру':</i>\n\n" +
+                                     "</b><i>/game</i><b><i> - запустить игру.</i>\n\n" +
+                                     "</b><i>/rating</i><b><i> - посмотреть рейтинг.</i></b>";
                 
                 return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: usage,
-                    ParseMode.Markdown);
+                    ParseMode.Html);
             }
         }
     }

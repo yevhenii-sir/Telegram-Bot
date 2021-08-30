@@ -50,8 +50,9 @@ namespace TelegramBot
             SqLiteHandlers.UpdateUserDataAsync(currentUser);
             
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
-                text: "Угадай загаданную цыфру от 0 до 9.",
-                replyMarkup: _inlineGameKeyboard);
+                text: "<b><i>Угадай загаданную цыфру от 0 до 9.</i></b>",
+                replyMarkup: _inlineGameKeyboard, 
+                parseMode: ParseMode.Html);
         }
         
         public static async Task BotOnCallbackQueryReceivedAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery)
@@ -72,28 +73,32 @@ namespace TelegramBot
 
                     await botClient.SendTextMessageAsync(
                         chatId: callbackQuery.Message.Chat.Id,
-                        text: $"Вы угадали! Загаданная цифра была {callbackQueryData}. \n" +
-                              $"Всего заработанных баллов: {currentUser.NumberOfWins}");
+                        text: $"<b><i>Вы угадали! Загаданная цифра была {callbackQueryData}. \n" +
+                              $"Всего заработанных баллов: {currentUser.NumberOfWins} шт.</i></b>",
+                        ParseMode.Html);
                 }
                 else
                 {
                     await botClient.SendTextMessageAsync(
                         chatId: callbackQuery.Message.Chat.Id,
-                        text: $"Вы не угадали. Попробуйте еще раз!. Осталось попыток: {currentUser.NumberOfAttempts}",
-                        replyMarkup: _inlineGameKeyboard);
+                        text: $"<b><i>Вы не угадали. Попробуйте еще раз!. Осталось попыток: {currentUser.NumberOfAttempts} шт.</i></b>",
+                        replyMarkup: _inlineGameKeyboard,
+                        parseMode: ParseMode.Html);
                 }
             }
             else
             {
                 await botClient.SendTextMessageAsync(
                     chatId: callbackQuery.Message.Chat.Id,
-                    text: $"Вы закончили игру, начните игру заново!!!\n" +
-                          $"Команда: /game");
+                    text: $"<b><i>Вы завершили текущую игру, начните заново!!!\n" +
+                          $"Команда: /game, удачи!</i></b>",
+                    ParseMode.Html);
             }
         }
 
         public static async Task<Message> ShowUserRatings(ITelegramBotClient botClient, Message message)
         {
+            SqLiteHandlers.UpdateUserList();
             string rating = "<b>Рейтинг:\n" +
                             $"{"ID", -22}Баллы</b>\n";
 
