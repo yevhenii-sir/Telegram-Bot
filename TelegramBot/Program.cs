@@ -18,6 +18,7 @@ namespace TelegramBot
             Bot = new TelegramBotClient(Configuration.BotToken);
             
             SqLiteHandlers.CreateDatabaseIfMissingAsync();
+            SqLiteHandlers.UpdateUserList();
 
             var me = await Bot.GetMeAsync();
             if (me.Username != null) Console.Title = me.Username;

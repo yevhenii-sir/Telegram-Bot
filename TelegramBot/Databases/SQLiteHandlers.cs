@@ -68,5 +68,34 @@ namespace TelegramBot.Databases
                 command.ExecuteNonQueryCommand();
             }
         }
+        
+        public static void UpdateUserList()
+        {
+            UsersList.Clear();
+
+            using (SQLiteConnection connection = new SQLiteConnection("DataSource = " + _fullPathToDatabase + ";"))
+            {
+                connection.Open();
+
+                string commandText =
+                    "SELECT * FROM USERS ORDER BY NumerOfWins DESC;";
+
+                SQLiteCommand command = new SQLiteCommand(commandText, connection);
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            UsersList.Add(new Users(reader.GetInt64(0), 
+                                reader.GetInt32(1),
+                                reader.GetByte(2)));
+                        }
+                    }
+                }
+                
+                connection.Close();
+            }
+        }
     }
 }
