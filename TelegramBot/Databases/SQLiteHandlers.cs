@@ -21,16 +21,16 @@ namespace TelegramBot.Databases
         /// <returns></returns>
         public static bool DatabaseExist() => File.Exists(_fullPathToDatabase);
         
-        private static int ExecuteNonQueryCommand(this SQLiteCommand command)
+        private static async Task<int> ExecuteNonQueryCommandAsync(this SQLiteCommand command)
         {
             int number = -1;
 
             try
             {
-                using var connection = new SQLiteConnection("DataSource = " + _fullPathToDatabase + ";");
+                using SQLiteConnection connection = new SQLiteConnection("DataSource = " + _fullPathToDatabase + ";");
                 command.Connection = connection;
                 connection.Open();
-                number = command.ExecuteNonQuery();
+                number = await command.ExecuteNonQueryAsync();
                 connection.Close();
             }
             catch (SQLiteException exc)
@@ -65,7 +65,7 @@ namespace TelegramBot.Databases
                     "CREATE TABLE USERS (TelegramId INTEGER NOT NULL PRIMARY KEY UNIQUE, NumerOfWins INTEGER DEFAULT 0, ConceivedNumber INTEGER DEFAULT 0)";
 
                 SQLiteCommand command = new SQLiteCommand(commandText);
-                command.ExecuteNonQueryCommand();
+                command.ExecuteNonQueryCommandAsync();
             }
         }
         
@@ -96,6 +96,27 @@ namespace TelegramBot.Databases
                 
                 connection.Close();
             }
+        }
+
+        public static async void AddUserToDatabaseAsync(long telegramId)
+        {
+            if (UsersList.Exists((user) => user.TelegramId == telegramId))
+                return;
+
+            await AddUser(telegramId);
+
+            static async Task AddUser(long telegramId)
+            {
+                UsersList.Add(new Users(telegramId, 0, 0));
+                
+                string commandText =
+                    "INSERT INTO USERS (TelegramId) VALUES (@telegramId)";
+
+                SQLiteCommand command = new SQLiteCommand(commandText);
+                command.Parameters.AddWithValue("@telegramId", telegramId);
+                
+                await command.ExecuteNonQueryCommandAsync();
+            };
         }
     }
 }
