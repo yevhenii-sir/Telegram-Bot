@@ -13,7 +13,7 @@ namespace TelegramBot.Databases
         private static string _databasePath = Directory.GetCurrentDirectory() + "/Databases/";
         private static string _fullPathToDatabase = _databasePath + _databaseName;
 
-        public static List<Users> UsersList { get; private set; } = new List<Users>();
+        public static List<User> UsersList { get; private set; } = new List<User>();
 
         /// <summary>
         /// Standard location for the directory with the database <b><i>{Path to the program}/Database/Users.db</i></b>
@@ -87,7 +87,7 @@ namespace TelegramBot.Databases
                     {
                         while (reader.Read())
                         {
-                            UsersList.Add(new Users(reader.GetInt64(0), 
+                            UsersList.Add(new User(reader.GetInt64(0), 
                                 reader.GetInt32(1),
                                 reader.GetByte(2)));
                         }
@@ -107,7 +107,7 @@ namespace TelegramBot.Databases
 
             static async Task AddUser(long telegramId)
             {
-                UsersList.Add(new Users(telegramId, 0, 0));
+                UsersList.Add(new User(telegramId, 0, 0));
                 
                 string commandText =
                     "INSERT INTO USERS (TelegramId) VALUES (@telegramId)";
@@ -119,11 +119,11 @@ namespace TelegramBot.Databases
             };
         }
 
-        public static async void UpdateUserDataAsync(Users user)
+        public static async void UpdateUserDataAsync(User user)
         {
             await UpdateUserValue(user);
             
-            static async Task UpdateUserValue(Users user)
+            static async Task UpdateUserValue(User user)
             {
                 string commandText =
                     "UPDATE USERS SET NumberOfWins = @numberOfWins, ConceivedNumber = @conceivedNumber WHERE TelegramId = @telegramId";
