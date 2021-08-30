@@ -38,6 +38,7 @@ namespace TelegramBot
             var handler = update.Type switch
             {
                 UpdateType.Message => BotOnMessageReceived(botClient, update.Message),
+                UpdateType.CallbackQuery => Game.BotOnCallbackQueryReceivedAsync(botClient, update.CallbackQuery),
             };
 
             try
@@ -62,6 +63,7 @@ namespace TelegramBot
             var action = (message.Text?.Split(" ").First()) switch
             {
                 "/start" => UserInitializationAsync(botClient, message),
+                "/game" => Game.SendInlineGameKeyboard(botClient, message),
                 "Сумма:" => SumOfNumbers(botClient, message),
                 "Перевод:" => TranslateString(botClient, message),
                 "Знаки:" => NumberOfSings(botClient, message),
@@ -159,6 +161,7 @@ namespace TelegramBot
             static async Task<Message> Usage(ITelegramBotClient botClient, Message message)
             {
                 const string usage = "*Команды:*\n\n" +
+                                     "/game * -  игра 'Угадай число'*\n\n" +
                                      "`Сумма: [числа через пробел]`*  -  сумма указаных чисел*\n\n" +
                                      "`Перевод: [фраза]`*  -  перевод указаного преложения*\n\n" +
                                      "`Знаки: [фраза]`*  -  детальный вывод количества знаков*";
