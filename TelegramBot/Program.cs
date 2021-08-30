@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
+using TelegramBot.Databases;
 
 
 namespace TelegramBot
@@ -14,6 +16,8 @@ namespace TelegramBot
         public static async Task Main()
         {
             Bot = new TelegramBotClient(Configuration.BotToken);
+            
+            SqLiteHandlers.CreateDatabaseIfMissingAsync();
 
             var me = await Bot.GetMeAsync();
             if (me.Username != null) Console.Title = me.Username;
