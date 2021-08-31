@@ -8,6 +8,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 using TelegramBot.Databases;
+using User = TelegramBot.Databases.User;
 
 namespace TelegramBot
 {
@@ -43,11 +44,14 @@ namespace TelegramBot
         
         public static async Task<Message> SendInlineGameKeyboard(ITelegramBotClient botClient, Message message)
         {
-            var currentUser = SqLiteHandlers.UsersList.First(user => user.TelegramId == message.From.Id);
+            if (!SqLiteHandlers.Users.ContainsKey(message.From.Id))
+                SqLiteHandlers.AddUserToDatabaseAsync(message.From.Id, message.From.Username);
 
+            User currentUser = SqLiteHandlers.Users[message.From.Id];
+            
             currentUser.NumberOfAttempts = NumberOfAttempts;
             currentUser.ConceivedNumber = (byte)new Random().Next(10);
-            SqLiteHandlers.UpdateUserDataAsync(currentUser);
+            SqLiteHandlers.UpdateUserDataAsync(message.From.Id, currentUser);
             
             return await botClient.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "<b><i>Угадай загаданную цыфру от 0 до 9.</i></b>",
@@ -57,7 +61,7 @@ namespace TelegramBot
         
         public static async Task BotOnCallbackQueryReceivedAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery)
         {
-            var currentUser = SqLiteHandlers.UsersList.First(user => user.TelegramId == callbackQuery.From.Id);
+            User currentUser = SqLiteHandlers.Users[callbackQuery.From.Id];
 
             byte callbackQueryData = Convert.ToByte(callbackQuery.Data);
 
@@ -67,9 +71,9 @@ namespace TelegramBot
                 {
                     currentUser.NumberOfAttempts = 0;
                     currentUser.NumberOfWins++;
-                    SqLiteHandlers.UpdateUserDataAsync(currentUser);
+                    SqLiteHandlers.UpdateUserDataAsync(callbackQuery.From.Id ,currentUser);
                     
-                    Console.WriteLine($"Игрок {currentUser.TelegramId} выирал!");
+                    Console.WriteLine($"Игрок {callbackQuery.From.Id} выирал!");
 
                     await botClient.SendTextMessageAsync(
                         chatId: callbackQuery.Message.Chat.Id,
@@ -100,13 +104,13 @@ namespace TelegramBot
         {
             SqLiteHandlers.UpdateUserList();
             string rating = "<b>Рейтинг:\n" +
-                            $"{"ID", -22}Баллы</b>\n";
+                            $"{"ID", 13} | Баллы</b>\n";
 
-            foreach (var user in SqLiteHandlers.UsersList)
+            foreach (var user in SqLiteHandlers.Users.Values)
             {
                 if (user.NumberOfWins == 0) break;
 
-                rating += $"<i>{user.TelegramId, -14}{user.NumberOfWins}</i>\n";
+                rating += $"<i>{((user.UserName != "") ? user.UserName : "Неизвестный"), -1}</i> | <i>{user.NumberOfWins}</i>\n";
             }
 
             return await botClient.SendTextMessageAsync(

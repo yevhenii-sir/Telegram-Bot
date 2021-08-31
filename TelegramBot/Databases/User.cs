@@ -2,14 +2,14 @@ namespace TelegramBot.Databases
 {
     public class User
     {
-        public long TelegramId { get; set; }
+        public string UserName{ get; set; }
         public int NumberOfWins { get; set; }
         public byte ConceivedNumber { get; set; }
         public int NumberOfAttempts { get; set; }
 
-        public User(long telegramId, int numberOfWins, byte conceivedNumber)
+        public User(string userName, int numberOfWins = 0, byte conceivedNumber = 0)
         {
-            TelegramId = telegramId;
+            UserName = userName;
             NumberOfWins = numberOfWins;
             ConceivedNumber = conceivedNumber;
             NumberOfAttempts = 0;

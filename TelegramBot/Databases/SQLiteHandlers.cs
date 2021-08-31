@@ -12,7 +12,7 @@ namespace TelegramBot.Databases
         private static string _databasePath = Directory.GetCurrentDirectory() + "/Databases/";
         private static string _fullPathToDatabase = _databasePath + _databaseName;
 
-        public static List<User> UsersList { get; private set; } = new List<User>();
+        public static Dictionary<long, User> Users { get; private set; } = new Dictionary<long, User>();
 
         /// <summary>
         /// Standard location for the directory with the database <b><i>{Path to the program}/Database/Users.db</i></b>
@@ -57,7 +57,7 @@ namespace TelegramBot.Databases
             }
 
             string commandText =
-                "CREATE TABLE USERS (TelegramId INTEGER NOT NULL PRIMARY KEY UNIQUE, NumberOfWins INTEGER DEFAULT 0, ConceivedNumber INTEGER DEFAULT 0)";
+                "CREATE TABLE USERS (TelegramId INTEGER NOT NULL PRIMARY KEY UNIQUE, Username TEXT DEFAULT '', NumberOfWins INTEGER DEFAULT 0, ConceivedNumber INTEGER DEFAULT 0)";
 
             SQLiteCommand command = new SQLiteCommand(commandText);
             command.ExecuteNonQueryCommandAsync();
@@ -65,7 +65,7 @@ namespace TelegramBot.Databases
 
         public static void UpdateUserList()
         {
-            UsersList.Clear();
+            Users.Clear();
 
             using (SQLiteConnection connection = new SQLiteConnection("DataSource = " + _fullPathToDatabase + ";"))
             {
@@ -81,9 +81,9 @@ namespace TelegramBot.Databases
                     {
                         while (reader.Read())
                         {
-                            UsersList.Add(new User(reader.GetInt64(0),
-                                reader.GetInt32(1),
-                                reader.GetByte(2)));
+                            string username = reader["Username"].ToString() ?? "";
+                            Users.Add(reader.GetInt64(0), 
+                                new User(username, reader.GetInt32(2), reader.GetByte(3)));
                         }
                     }
                 }
@@ -92,40 +92,44 @@ namespace TelegramBot.Databases
             }
         }
 
-        public static async void AddUserToDatabaseAsync(long telegramId)
+        public static async void AddUserToDatabaseAsync(long telegramId, string username)
         {
-            if (UsersList.Exists((user) => user.TelegramId == telegramId))
+            if (Users.ContainsKey(telegramId))
                 return;
 
-            await AddUser(telegramId);
+            await AddUser(telegramId, username);
 
-            static async Task AddUser(long telegramId)
+            static async Task AddUser(long telegramId, string username)
             {
-                UsersList.Add(new User(telegramId, 0, 0));
+                Users.Add(telegramId, new User(username));
 
                 string commandText =
-                    "INSERT INTO USERS (TelegramId) VALUES (@telegramId)";
+                    "INSERT INTO USERS (TelegramId, Username) VALUES (@telegramId, @username)";
 
                 SQLiteCommand command = new SQLiteCommand(commandText);
                 command.Parameters.AddWithValue("@telegramId", telegramId);
+                command.Parameters.AddWithValue("@username", username);
 
                 await command.ExecuteNonQueryCommandAsync();
+                
+                Console.WriteLine($"Пользователь {telegramId} добавлен в базу данных.");
             }
         }
 
-        public static async void UpdateUserDataAsync(User user)
+        public static async void UpdateUserDataAsync(long telegramId, User user)
         {
-            await UpdateUserValue(user);
+            await UpdateUserValue(telegramId, user);
             
-            static async Task UpdateUserValue(User user)
+            static async Task UpdateUserValue(long telegramId, User user)
             {
                 string commandText =
-                    "UPDATE USERS SET NumberOfWins = @numberOfWins, ConceivedNumber = @conceivedNumber WHERE TelegramId = @telegramId";
+                    "UPDATE USERS SET Username = @username, NumberOfWins = @numberOfWins, ConceivedNumber = @conceivedNumber WHERE TelegramId = @telegramId";
 
                 SQLiteCommand command = new SQLiteCommand(commandText);
+                command.Parameters.AddWithValue("@username", user.UserName);
                 command.Parameters.AddWithValue("@numberOfWins", user.NumberOfWins);
                 command.Parameters.AddWithValue("@conceivedNumber", user.ConceivedNumber);
-                command.Parameters.AddWithValue("@telegramId", user.TelegramId);
+                command.Parameters.AddWithValue("@telegramId", telegramId);
 
                 await command.ExecuteNonQueryCommandAsync();
             }

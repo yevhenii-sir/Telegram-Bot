@@ -77,9 +77,7 @@ namespace TelegramBot
             static async Task<Message> UserInitializationAsync(ITelegramBotClient botClient, Message message)
             {
                 if (SqLiteHandlers.DatabaseExist())
-                    SqLiteHandlers.AddUserToDatabaseAsync(message.From.Id);
-
-                Console.WriteLine($"Пользователь {message.From.Id} добавлен в базу данных.");
+                    SqLiteHandlers.AddUserToDatabaseAsync(message.From.Id, message.From.Username);
 
                 return await Usage(botClient, message);
             }
